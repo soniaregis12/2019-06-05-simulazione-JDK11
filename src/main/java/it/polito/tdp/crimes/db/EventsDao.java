@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.polito.tdp.crimes.model.Distretto;
 import it.polito.tdp.crimes.model.Event;
 
 
@@ -56,5 +57,86 @@ public class EventsDao {
 			return null ;
 		}
 	}
+	
+	public List<Integer> getAllYears(){
+		String sql = "SELECT DISTINCT YEAR(e.reported_date) AS anno FROM `events` AS e" ;
+		try {
+			Connection conn = DBConnect.getConnection() ;
 
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			
+			List<Integer> list = new ArrayList<>() ;
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				list.add(res.getInt("anno"));
+			}
+			
+			conn.close();
+			return list ;
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
+	public List<Integer> getVertici(){
+		String sql = "SELECT DISTINCT e.district_id AS distretto" + 
+				"	FROM `events` AS e" ;
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			
+			List<Integer> list = new ArrayList<>() ;
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				list.add(res.getInt("distretto"));
+			}
+			
+			conn.close();
+			return list ;
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+
+	public List<Distretto> getDIstrettiLongLat(int anno){
+		String sql = "SELECT e.district_id AS distretto, AVG(e.geo_lon) AS longitudine, AVG(e.geo_lat) AS latitudine" + 
+				"	FROM `events` AS e" + 
+				"	WHERE YEAR(e.reported_date) =?" + 
+				"	GROUP BY distretto" ;
+		try {
+			Connection conn = DBConnect.getConnection() ;
+
+			PreparedStatement st = conn.prepareStatement(sql) ;
+			st.setInt(1, anno);
+			
+			List<Distretto> list = new ArrayList<>() ;
+			
+			ResultSet res = st.executeQuery() ;
+			
+			while(res.next()) {
+				Distretto d = new Distretto(res.getInt("distretto"), res.getDouble("longitudine"), res.getDouble("latitudine"));
+				list.add(d);
+			}
+			
+			conn.close();
+			return list ;
+
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null ;
+		}
+	}
+	
 }
